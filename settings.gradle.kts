@@ -21,3 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "tcalc"
 include(":app")
+include(":keypad")
