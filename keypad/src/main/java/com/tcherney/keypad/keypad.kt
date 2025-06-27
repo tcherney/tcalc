@@ -13,6 +13,7 @@ import androidx.compose.runtime.remember
 //TODO figure out publishing so we can import in other project
 @Composable
 fun KeyPad() {
+    //TODO refactor modes to use a simple enum instead of doing string comparisons
     val input = remember {mutableStateOf("")}
     val curInput = remember {mutableStateOf("")}
     val curVal = remember { mutableIntStateOf(0) }
@@ -21,7 +22,18 @@ fun KeyPad() {
     val curMulMode = remember {mutableStateOf("+")}
     val plusBuild = remember { mutableIntStateOf(0) }
 
+
     fun computeInput(newMode: String) {
+        //TODO finish end functionality
+        if (newMode == "end") {
+            input.value = ""
+            curInput.value = ""
+            previousInput.value = ""
+            curMode.value = "+"
+            curMulMode.value = "+"
+            plusBuild.intValue = 0
+            return
+        }
         if (curInput.value.isEmpty()) {
             if (input.value.isNotEmpty() && newMode != "build") {
                 input.value = input.value.dropLast(1) + newMode
@@ -99,8 +111,16 @@ fun KeyPad() {
         Row {
             Text(curVal.intValue.toString())
         }
+        //TODO adjust settings for textbox so that it doesn't shift content down when it gets big
         Row {
             Text(input.value)
+        }
+        Row {
+            Button( onClick = {
+                computeInput("end")
+            }) {
+                Text("End")
+            }
         }
         Row {
             Button( onClick = {
@@ -189,7 +209,7 @@ fun KeyPad() {
                 Text("0")
             }
             Button( onClick = {computeInput("build")}) {
-                Text("+")
+                Text("Enter")
             }
         }
 
