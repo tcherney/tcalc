@@ -1,9 +1,10 @@
-package com.tcherney.keypad
+package com.tcherney.tcalc
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableIntState
@@ -12,6 +13,13 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
@@ -27,7 +35,7 @@ fun KeyPad(input: MutableState<String> = remember { mutableStateOf("") }, curVal
     val curMode = remember {mutableStateOf("+")}
     val curMulMode = remember {mutableStateOf("+")}
     val plusBuild = remember { mutableIntStateOf(0) }
-
+    val ctx = LocalContext.current
     fun computeInput(newMode: String) {
         //TODO finish end functionality
         if (newMode == "end") {
@@ -37,6 +45,12 @@ fun KeyPad(input: MutableState<String> = remember { mutableStateOf("") }, curVal
             curMode.value = "+"
             curMulMode.value = "+"
             plusBuild.intValue = 0
+            if (ctx is IMEService) {
+                ctx.currentInputConnection.commitText(
+                    curVal.intValue.toString(),
+                    curVal.intValue.toString().length
+                )
+            }
             return
         }
         if (curInput.value.isEmpty()) {
@@ -115,11 +129,30 @@ fun KeyPad(input: MutableState<String> = remember { mutableStateOf("") }, curVal
     val buttonPadding = Modifier.padding(2.dp)
     Column {
         Row {
-            Text(curVal.intValue.toString(), fontSize = 20.em)
+            //Text(curVal.intValue.toString(), fontSize = 20.em)
+            Text(
+                text = curVal.intValue.toString(),
+                style = TextStyle(
+                    fontSize = 20.em,
+                    shadow = Shadow(
+                        color = Color.White, blurRadius = 3f
+                    )
+                )
+            )
         }
         //TODO adjust settings for textbox so that it doesn't shift content down when it gets big
         Row {
-            Text(input.value, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            //Text(input.value, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(
+                text = input.value,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                style = TextStyle(
+                    shadow = Shadow(
+                        color = Color.White, blurRadius = 3f
+                    )
+                )
+            )
         }
         Row {
             Button( onClick = {
@@ -216,7 +249,7 @@ fun KeyPad(input: MutableState<String> = remember { mutableStateOf("") }, curVal
             Button( onClick = {
                 if (plusBuildEnabled)computeInput("build")
                 else computeInput("+")
-                              }, modifier = buttonPadding) {
+            }, modifier = buttonPadding) {
                 Text(".")
             }
             Button( onClick = {
@@ -228,7 +261,7 @@ fun KeyPad(input: MutableState<String> = remember { mutableStateOf("") }, curVal
             Button( onClick = {
                 if (plusBuildEnabled)computeInput("build")
                 else computeInput("+")
-                              }, modifier = buttonPadding) {
+            }, modifier = buttonPadding) {
                 Text("Enter")
             }
         }
