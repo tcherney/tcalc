@@ -50,6 +50,8 @@ fun KeyPad(input: MutableState<String> = remember { mutableStateOf("") }, curVal
                     curVal.intValue.toString(),
                     curVal.intValue.toString().length
                 )
+                //reset if keyboard input, might want to generally do that
+                curVal.intValue = 0
             }
             return
         }
