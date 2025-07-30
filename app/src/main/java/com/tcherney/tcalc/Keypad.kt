@@ -35,6 +35,7 @@ fun KeyPad(input: MutableState<String> = remember { mutableStateOf("") }, curVal
     val curMode = remember {mutableStateOf("+")}
     val curMulMode = remember {mutableStateOf("+")}
     val plusBuild = remember { mutableIntStateOf(0) }
+    var cleared = false
     val ctx = LocalContext.current
     fun computeInput(newMode: String) {
         //TODO finish end functionality
@@ -52,6 +53,12 @@ fun KeyPad(input: MutableState<String> = remember { mutableStateOf("") }, curVal
                 )
                 //reset if keyboard input, might want to generally do that
                 curVal.intValue = 0
+                input.value = ""
+                curInput.value = ""
+                previousInput.value = ""
+                curMode.value = "+"
+                curMulMode.value = "+"
+                plusBuild.intValue = 0
             }
             return
         }
@@ -62,8 +69,7 @@ fun KeyPad(input: MutableState<String> = remember { mutableStateOf("") }, curVal
             if (newMode == "build" && plusBuild.intValue != 0) {
                 if (curMode.value == "+" || curMode.value == "build") {
                     curVal.intValue += plusBuild.intValue
-                }
-                else if (curMode.value == "-") {
+                } else if (curMode.value == "-") {
                     curVal.intValue -= plusBuild.intValue
                 }
                 previousInput.value = plusBuild.intValue.toString()
@@ -78,9 +84,28 @@ fun KeyPad(input: MutableState<String> = remember { mutableStateOf("") }, curVal
         else {
             if (curMode.value == "+") {
                 if (newMode != "*") {
-                    curVal.intValue += curInput.value.toInt()
-                    if (newMode != "build" && curInput.value.toInt() != 0) {
-                        plusBuild.intValue = curInput.value.toInt()
+                    //this allows entering of a number directly
+                    if(newMode == "build" && plusBuild.intValue == 0) {
+                        if (ctx is IMEService) {
+                            ctx.currentInputConnection.commitText(
+                                curInput.value,
+                                curInput.value.length
+                            )
+                            curVal.intValue = 0
+                            input.value = ""
+                            curInput.value = ""
+                            previousInput.value = ""
+                            curMode.value = "+"
+                            curMulMode.value = "+"
+                            plusBuild.intValue = 0
+                            cleared = true
+                        }
+                    }
+                    else {
+                        curVal.intValue += curInput.value.toInt()
+                        if (newMode != "build" && curInput.value.toInt() != 0) {
+                            plusBuild.intValue = curInput.value.toInt()
+                        }
                     }
                 }
                 previousInput.value = curInput.value
@@ -111,13 +136,15 @@ fun KeyPad(input: MutableState<String> = remember { mutableStateOf("") }, curVal
                 previousInput.value = curInput.value
                 curInput.value = ""
             }
-            if (newMode == "build") {
-                input.value += "+"
+            if (!cleared) {
+                if (newMode == "build") {
+                    input.value += "+"
+                } else {
+                    input.value += newMode
+                }
+                curMode.value = newMode
             }
-            else {
-                input.value += newMode
-            }
-            curMode.value = newMode
+            cleared = false
         }
         if (newMode == "*") {
             if (curMode.value != "*") {
